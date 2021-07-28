@@ -5,6 +5,7 @@ import PlantPage from "./PlantPage";
 function App() {
   const [ plants, setPlants ] = useState([])
   const [ userInput, setUserInput ] = useState("")
+  const [ newPrice, setNewPrice ] = useState("")
 
   useEffect(() => {
     fetch("http://localhost:6001/plants")
@@ -38,10 +39,43 @@ function App() {
     }
   }
 
+  function deleteItem(id) {
+    
+    fetch(`http://localhost:6001/plants/${id}`, {
+      method: "DELETE"
+    })
+    
+    setPlants(plants.filter(plant=> plant.id !== id))
+  }
+
+  function upliftingPrice(id, formData) {
+    console.log(id, formData)
+
+    fetch(`http://localhost:6001/plants/${id}`, {
+      method:"PATCH",
+      headers: {
+        "Content-Type" : "application/json"
+      },
+      body: JSON.stringify(formData)
+    }).then(resp => resp.json())
+    .then(data => {
+      const updatedPriceList = [...plants]
+      setPlants(updatedPriceList.map(plant=> {
+        if(plant.id === data.id){
+          plant.price = data.price
+          return plant
+        } else {
+          return plant
+        }
+      })
+      )
+    })
+  }
+
   return (
     <div className="app">
       <Header />
-      <PlantPage plants={filteredSearchItems()} handleSubmittedData={handleSubmittedData} handleSearch={handleSearch} />
+      <PlantPage plants={filteredSearchItems()} handleSubmittedData={handleSubmittedData} handleSearch={handleSearch} deleteItem={deleteItem} upliftingPrice={upliftingPrice}/>
     </div>
   );
 }
